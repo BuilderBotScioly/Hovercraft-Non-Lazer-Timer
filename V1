@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hovercraft Timer</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a33;
+      --text: #eef2ff;
+      --muted: #aab3d6;
+      --accent: #6ea8fe;
+      --danger: #ff6b6b;
+      --ok: #51cf66;
+      --border: rgba(255,255,255,0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, #18224a 0%, var(--bg) 55%);
+      color: var(--text);
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
+    h1 { margin: 8px 0 14px; font-size: 22px; letter-spacing: 0.2px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 860px) {
+      .grid { grid-template-columns: 380px 1fr; align-items: start; }
+    }
+    .card {
+      background: rgba(18,26,51,0.92);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      backdrop-filter: blur(6px);
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    label { font-size: 12px; color: var(--muted); }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: rgba(110,168,254,0.65); }
+    .time {
+      font-variant-numeric: tabular-nums;
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      margin: 10px 0 6px;
+      text-align: center;
+    }
+    .sub { text-align: center; color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 650;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    button:active { transform: translateY(1px); }
+    .btn-primary { border-color: rgba(110,168,254,0.45); background: rgba(110,168,254,0.18); }
+    .btn-danger { border-color: rgba(255,107,107,0.5); background: rgba(255,107,107,0.14); }
+    .btn-ok { border-color: rgba(81,207,102,0.55); background: rgba(81,207,102,0.14); }
+    .btn-wide { flex: 1; min-width: 120px; padding: 12px 14px; }
+    .hint { font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    thead th {
+      text-align: left;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    .mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .topbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+    .topbar > div { flex: 1; min-width: 200px; }
+    .small { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Science Olympiad Hovercraft Timer</h1>
+
+    <div class="topbar card" style="margin-bottom: 14px;">
+      <div>
+        <label for="sessionName">Session / Event Name</label>
+        <input id="sessionName" type="text" placeholder="e.g., Regionals 2026" />
+        <div class="small" style="margin-top:6px;">
+          Saved on this device. Included in CSV export.
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center;">
+        <span class="pill" id="savedStatus">Not saved yet</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left: Timer -->
+      <div class="card">
+        <div class="time mono" id="timeDisplay">00:00.000</div>
+        <div class="sub" id="timerState">Ready</div>
+
+        <div class="row" style="margin: 10px 0 10px;">
+          <button class="btn-primary btn-wide" id="startStopBtn">Start</button>
+          <button class="btn-danger btn-wide" id="resetBtn">Reset</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <label for="labelInput">Label (team / trial / notes)</label>
+          <input id="labelInput" type="text" placeholder="e.g., Team 12 - Trial 2" />
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+          <button class="btn-ok btn-wide" id="saveBtn">Save Run</button>
+          <button class="btn-wide" id="clearLabelBtn">Clear Label</button>
+        </div>
+
+        <div class="hint">
+          Tips: Stop the timer, type a label, then tap <b>Save Run</b>.<br/>
+          Keyboard (if using one): Space = Start/Stop, R = Reset, Enter = Save.
+        </div>
+      </div>
+
+      <!-- Right: Runs -->
+      <div class="card">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <div>
+            <div style="font-weight: 750; margin-bottom: 2px;">Saved Runs</div>
+            <div class="small" id="runCount">0 runs</div>
+          </div>
+          <div class="actions">
+            <button id="exportBtn">Export CSV</button>
+            <button class="btn-danger" id="clearAllBtn">Clear All</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width: 210px;">Label</th>
+                <th style="min-width: 110px;">Time</th>
+                <th style="min-width: 170px;">Timestamp</th>
+                <th style="min-width: 120px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="runsBody">
+              <!-- rows injected -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hint" style="margin-top: 10px;">
+          Export makes a CSV you can open in Google Sheets or Excel.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ======================
+    // Storage
+    // ======================
+    const STORAGE_KEY = "hovercraftTimer:v1";
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { sessionName: "", runs: [] };
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return { sessionName: "", runs: [] };
+        return {
+          sessionName: typeof parsed.sessionName === "string" ? parsed.sessionName : "",
+          runs: Array.isArray(parsed.runs) ? parsed.runs : []
+        };
+      } catch {
+        return { sessionName: "", runs: [] };
+      }
+    }
+
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      setSavedStatus("Saved");
+    }
+
+    // ======================
+    // Timer Engine
+    // ======================
+    let running = false;
+    let startT = 0;
+    let elapsedMs = 0;
+    let rafId = null;
+
+    function now() { return performance.now(); }
+
+    function formatMs(ms) {
+      const m = Math.floor(ms / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      const mm = Math.floor(ms % 1000);
+      const mStr = String(m).padStart(2, "0");
+      const sStr = String(s).padStart(2, "0");
+      const mmStr = String(mm).padStart(3, "0");
+      return `${mStr}:${sStr}.${mmStr}`;
+    }
+
+    function tick() {
+      if (!running) return;
+      elapsedMs = now() - startT;
+      timeDisplay.textContent = formatMs(elapsedMs);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function startTimer() {
+      if (running) return;
+      running = true;
+      startT = now() - elapsedMs; // resume support
+      timerState.textContent = "Running";
+      startStopBtn.textContent = "Stop";
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function stopTimer() {
+      if (!running) return;
+      running = false;
+      elapsedMs = now() - startT;
+      timeDisplay.textContent = formatMs(elapsedMs);
+      timerState.textContent = "Stopped";
+      startStopBtn.textContent = "Start";
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      // Focus label for fast workflow
+      labelInput.focus();
+    }
+
+    function resetTimer() {
+      running = false;
+      elapsedMs = 0;
+      timeDisplay.textContent = "00:00.000";
+      timerState.textContent = "Ready";
+      startStopBtn.textContent = "Start";
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
+    // ======================
+    // Runs + UI
+    // ======================
+    const timeDisplay = document.getElementById("timeDisplay");
+    const timerState = document.getElementById("timerState");
+    const startStopBtn = document.getElementById("startStopBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const labelInput = document.getElementById("labelInput");
+    const runsBody = document.getElementById("runsBody");
+    const runCount = document.getElementById("runCount");
+    const exportBtn = document.getElementById("exportBtn");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const sessionNameInput = document.getElementById("sessionName");
+    const clearLabelBtn = document.getElementById("clearLabelBtn");
+    const savedStatus = document.getElementById("savedStatus");
+
+    let state = loadState();
+    sessionNameInput.value = state.sessionName || "";
+
+    function setSavedStatus(text) {
+      savedStatus.textContent = text;
+      savedStatus.style.opacity = "1";
+      clearTimeout(setSavedStatus._t);
+      setSavedStatus._t = setTimeout(() => { savedStatus.style.opacity = "0.7"; }, 800);
+    }
+
+    function isoToNice(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleString();
+      } catch {
+        return iso;
+      }
+    }
+
+    function renderRuns() {
+      runsBody.innerHTML = "";
+      const runs = state.runs || [];
+      runCount.textContent = `${runs.length} run${runs.length === 1 ? "" : "s"}`;
+
+      if (runs.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.style.color = "rgba(238,242,255,0.7)";
+        td.textContent = "No runs yet. Time a run and tap Save Run.";
+        td.style.padding = "14px";
+        tr.appendChild(td);
+        runsBody.appendChild(tr);
+        return;
+      }
+
+      for (const run of runs) {
+        const tr = document.createElement("tr");
+
+        const tdLabel = document.createElement("td");
+        tdLabel.textContent = run.label || "";
+        tr.appendChild(tdLabel);
+
+        const tdTime = document.createElement("td");
+        tdTime.className = "mono";
+        tdTime.textContent = run.time_display || formatMs(run.time_ms || 0);
+        tr.appendChild(tdTime);
+
+        const tdTs = document.createElement("td");
+        tdTs.textContent = isoToNice(run.created_at || "");
+        tr.appendChild(tdTs);
+
+        const tdAct = document.createElement("td");
+        const actWrap = document.createElement("div");
+        actWrap.className = "actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+          const newLabel = prompt("Edit label:", run.label || "");
+          if (newLabel === null) return;
+          run.label = newLabel.trim();
+          saveState(state);
+          renderRuns();
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-danger";
+        delBtn.textContent = "Delete";
+        delBtn.addEventListener("click", () => {
+          state.runs = state.runs.filter(r => r.id !== run.id);
+          saveState(state);
+          renderRuns();
+        });
+
+        actWrap.appendChild(editBtn);
+        actWrap.appendChild(delBtn);
+        tdAct.appendChild(actWrap);
+        tr.appendChild(tdAct);
+
+        runsBody.appendChild(tr);
+      }
+    }
+
+    function addRun() {
+      if (running) stopTimer();
+
+      const ms = Math.max(0, Math.floor(elapsedMs));
+      if (ms <= 0) {
+        alert("Timer is 0. Start and stop to record a run.");
+        return;
+      }
+
+      const sessionName = (sessionNameInput.value || "").trim();
+      const labelRaw = (labelInput.value || "").trim();
+      const label = labelRaw.length ? labelRaw : `Run ${((state.runs?.length || 0) + 1)}`;
+
+      const run = {
+        id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
+        session: sessionName,
+        label,
+        time_ms: ms,
+        time_display: formatMs(ms),
+        created_at: new Date().toISOString()
+      };
+
+      state.sessionName = sessionName;
+      state.runs = state.runs || [];
+      state.runs.unshift(run);
+
+      saveState(state);
+      renderRuns();
+
+      // Clear label to speed next entry
+      labelInput.value = "";
+      setSavedStatus("Saved run");
+    }
+
+    // ======================
+    // CSV Export
+    // ======================
+    function csvEscape(value) {
+      const s = String(value ?? "");
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+
+    function exportCSV() {
+      const sessionName = (sessionNameInput.value || state.sessionName || "").trim();
+      const runs = state.runs || [];
+
+      if (runs.length === 0) {
+        alert("No runs to export.");
+        return;
+      }
+
+      const headers = ["Session", "Label", "Time (ms)", "Time", "Timestamp"];
+      const rows = [headers.join(",")];
+
+      for (const r of runs.slice().reverse()) { // oldest -> newest in file
+        rows.push([
+          csvEscape(sessionName || r.session || ""),
+          csvEscape(r.label || ""),
+          csvEscape(r.time_ms ?? ""),
+          csvEscape(r.time_display || ""),
+          csvEscape(r.created_at || "")
+        ].join(","));
+      }
+
+      const csv = rows.join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const safeSession = (sessionName || "session").replace(/[^a-z0-9-_]+/gi, "_").slice(0, 40);
+      const filename = `hovercraft-times_${safeSession}_${dateStr}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ======================
+    // Events
+    // ======================
+    startStopBtn.addEventListener("click", () => running ? stopTimer() : startTimer());
+    resetBtn.addEventListener("click", resetTimer);
+    saveBtn.addEventListener("click", addRun);
+    exportBtn.addEventListener("click", exportCSV);
+
+    clearAllBtn.addEventListener("click", () => {
+      if (!confirm("Clear ALL saved runs? This cannot be undone.")) return;
+      state.runs = [];
+      saveState(state);
+      renderRuns();
+      setSavedStatus("Cleared");
+    });
+
+    clearLabelBtn.addEventListener("click", () => {
+      labelInput.value = "";
+      labelInput.focus();
+    });
+
+    sessionNameInput.addEventListener("input", () => {
+      state.sessionName = (sessionNameInput.value || "").trim();
+      saveState(state);
+      setSavedStatus("Saved");
+    });
+
+    // Keyboard shortcuts (if a keyboard is connected)
+    document.addEventListener("keydown", (e) => {
+      // Don't hijack keys while typing in inputs
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+      const typing = tag === "input" || tag === "textarea";
+
+      if (!typing && e.code === "Space") {
+        e.preventDefault();
+        running ? stopTimer() : startTimer();
+      }
+      if (!typing && (e.key === "r" || e.key === "R")) {
+        resetTimer();
+      }
+      if (typing && e.key === "Enter" && e.target === labelInput) {
+        addRun();
+      }
+    });
+
+    // Init
+    setSavedStatus("Loaded");
+    renderRuns();
+  </script>
+</body>
+</html>
