@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hovercraft Timer</title>
+  <title>Metric to Imperial Converter</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -11,509 +11,263 @@
       --text: #eef2ff;
       --muted: #aab3d6;
       --accent: #6ea8fe;
-      --danger: #ff6b6b;
-      --ok: #51cf66;
-      --border: rgba(255,255,255,0.12);
+      --border: rgba(255,255,255,0.16);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 20% 0%, #18224a 0%, var(--bg) 55%);
       color: var(--text);
-    }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
-    h1 { margin: 8px 0 14px; font-size: 22px; letter-spacing: 0.2px; }
-    .grid {
+      background: radial-gradient(1000px 500px at 15% 0%, #18224a 0%, var(--bg) 55%);
+      min-height: 100vh;
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    @media (min-width: 860px) {
-      .grid { grid-template-columns: 380px 1fr; align-items: start; }
+      place-items: center;
+      padding: 16px;
     }
     .card {
-      background: rgba(18,26,51,0.92);
+      width: min(760px, 100%);
+      background: rgba(18,26,51,0.94);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.3);
+      padding: 18px;
     }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    label { font-size: 12px; color: var(--muted); }
-    input[type="text"] {
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    .sub { color: var(--muted); margin: 0 0 14px; font-size: .95rem; }
+    .mode {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .mode button {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 650;
+    }
+    .mode button.active {
+      border-color: rgba(110,168,254,.5);
+      background: rgba(110,168,254,.22);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+    label { color: var(--muted); font-size: .85rem; display:block; margin-bottom: 6px; }
+    input, select {
       width: 100%;
       padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.05);
       color: var(--text);
       outline: none;
     }
-    input[type="text"]:focus { border-color: rgba(110,168,254,0.65); }
-    .time {
-      font-variant-numeric: tabular-nums;
-      font-size: 44px;
-      font-weight: 700;
-      letter-spacing: 0.6px;
-      margin: 10px 0 6px;
-      text-align: center;
-    }
-    .sub { text-align: center; color: var(--muted); font-size: 12px; margin-bottom: 10px; }
-    button {
-      appearance: none;
+    .row { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; }
+    .row button {
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.08);
+      background: rgba(81,207,102,.16);
       color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-weight: 650;
+      padding: 10px 14px;
+      border-radius: 10px;
       cursor: pointer;
-      user-select: none;
-      touch-action: manipulation;
+      font-weight: 650;
     }
-    button:active { transform: translateY(1px); }
-    .btn-primary { border-color: rgba(110,168,254,0.45); background: rgba(110,168,254,0.18); }
-    .btn-danger { border-color: rgba(255,107,107,0.5); background: rgba(255,107,107,0.14); }
-    .btn-ok { border-color: rgba(81,207,102,0.55); background: rgba(81,207,102,0.14); }
-    .btn-wide { flex: 1; min-width: 120px; padding: 12px 14px; }
-    .hint { font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 8px; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      overflow: hidden;
+    .result {
+      margin-top: 14px;
+      border: 1px solid var(--border);
       border-radius: 12px;
-      border: 1px solid var(--border);
+      padding: 12px;
+      background: rgba(255,255,255,.06);
+      font-variant-numeric: tabular-nums;
+      min-height: 48px;
+      display: grid;
+      align-items: center;
     }
-    thead th {
-      text-align: left;
-      font-size: 12px;
-      color: var(--muted);
-      padding: 10px;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid var(--border);
-    }
-    tbody td {
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      vertical-align: top;
-    }
-    tbody tr:last-child td { border-bottom: none; }
-    .mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .pill {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.06);
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .topbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
-    .topbar > div { flex: 1; min-width: 200px; }
-    .small { font-size: 12px; color: var(--muted); }
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <h1>Science Olympiad Hovercraft Timer</h1>
+  <main class="card">
+    <h1>Metric to Imperial Converter</h1>
+    <p class="sub">Switch modes to convert either Metric → Imperial or Imperial → Metric.</p>
 
-    <div class="topbar card" style="margin-bottom: 14px;">
-      <div>
-        <label for="sessionName">Session / Event Name</label>
-        <input id="sessionName" type="text" placeholder="e.g., Regionals 2026" />
-        <div class="small" style="margin-top:6px;">
-          Saved on this device. Included in CSV export.
-        </div>
-      </div>
-      <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center;">
-        <span class="pill" id="savedStatus">Not saved yet</span>
-      </div>
+    <div class="mode">
+      <button id="metricToImperialBtn" class="active" type="button">Metric → Imperial</button>
+      <button id="imperialToMetricBtn" type="button">Imperial → Metric</button>
     </div>
 
     <div class="grid">
-      <!-- Left: Timer -->
-      <div class="card">
-        <div class="time mono" id="timeDisplay">00:00.000</div>
-        <div class="sub" id="timerState">Ready</div>
-
-        <div class="row" style="margin: 10px 0 10px;">
-          <button class="btn-primary btn-wide" id="startStopBtn">Start</button>
-          <button class="btn-danger btn-wide" id="resetBtn">Reset</button>
-        </div>
-
-        <div style="margin-top: 10px;">
-          <label for="labelInput">Label (team / trial / notes)</label>
-          <input id="labelInput" type="text" placeholder="e.g., Team 12 - Trial 2" />
-        </div>
-
-        <div class="row" style="margin-top: 10px;">
-          <button class="btn-ok btn-wide" id="saveBtn">Save Run</button>
-          <button class="btn-wide" id="clearLabelBtn">Clear Label</button>
-        </div>
-
-        <div class="hint">
-          Tips: Stop the timer, type a label, then tap <b>Save Run</b>.<br/>
-          Keyboard (if using one): Space = Start/Stop, R = Reset, Enter = Save.
-        </div>
+      <div>
+        <label for="valueInput">Value</label>
+        <input id="valueInput" type="number" step="any" value="1" />
       </div>
-
-      <!-- Right: Runs -->
-      <div class="card">
-        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
-          <div>
-            <div style="font-weight: 750; margin-bottom: 2px;">Saved Runs</div>
-            <div class="small" id="runCount">0 runs</div>
-          </div>
-          <div class="actions">
-            <button id="exportBtn">Export CSV</button>
-            <button class="btn-danger" id="clearAllBtn">Clear All</button>
-          </div>
-        </div>
-
-        <div style="overflow:auto;">
-          <table>
-            <thead>
-              <tr>
-                <th style="min-width: 210px;">Label</th>
-                <th style="min-width: 110px;">Time</th>
-                <th style="min-width: 170px;">Timestamp</th>
-                <th style="min-width: 120px;">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="runsBody">
-              <!-- rows injected -->
-            </tbody>
-          </table>
-        </div>
-
-        <div class="hint" style="margin-top: 10px;">
-          Export makes a CSV you can open in Google Sheets or Excel.
-        </div>
+      <div>
+        <label for="categorySelect">Category</label>
+        <select id="categorySelect"></select>
+      </div>
+      <div>
+        <label for="fromUnitSelect">From unit</label>
+        <select id="fromUnitSelect"></select>
+      </div>
+      <div>
+        <label for="toUnitSelect">To unit</label>
+        <select id="toUnitSelect"></select>
       </div>
     </div>
-  </div>
+
+    <div class="row" style="margin-top: 10px;">
+      <button id="convertBtn" type="button">Convert</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </main>
 
   <script>
-    // ======================
-    // Storage
-    // ======================
-    const STORAGE_KEY = "hovercraftTimer:v1";
-
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { sessionName: "", runs: [] };
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return { sessionName: "", runs: [] };
-        return {
-          sessionName: typeof parsed.sessionName === "string" ? parsed.sessionName : "",
-          runs: Array.isArray(parsed.runs) ? parsed.runs : []
-        };
-      } catch {
-        return { sessionName: "", runs: [] };
+    const unitDefs = {
+      length: {
+        metric: {
+          millimeter: { label: "millimeter (mm)", toBase: v => v / 1000, fromBase: v => v * 1000 },
+          centimeter: { label: "centimeter (cm)", toBase: v => v / 100, fromBase: v => v * 100 },
+          meter: { label: "meter (m)", toBase: v => v, fromBase: v => v },
+          kilometer: { label: "kilometer (km)", toBase: v => v * 1000, fromBase: v => v / 1000 }
+        },
+        imperial: {
+          inch: { label: "inch (in)", toBase: v => v * 0.0254, fromBase: v => v / 0.0254 },
+          foot: { label: "foot (ft)", toBase: v => v * 0.3048, fromBase: v => v / 0.3048 },
+          yard: { label: "yard (yd)", toBase: v => v * 0.9144, fromBase: v => v / 0.9144 },
+          mile: { label: "mile (mi)", toBase: v => v * 1609.344, fromBase: v => v / 1609.344 }
+        }
+      },
+      mass: {
+        metric: {
+          gram: { label: "gram (g)", toBase: v => v / 1000, fromBase: v => v * 1000 },
+          kilogram: { label: "kilogram (kg)", toBase: v => v, fromBase: v => v },
+          tonne: { label: "tonne (metric ton)", toBase: v => v * 1000, fromBase: v => v / 1000 }
+        },
+        imperial: {
+          ounce: { label: "ounce (oz)", toBase: v => v * 0.028349523125, fromBase: v => v / 0.028349523125 },
+          pound: { label: "pound (lb)", toBase: v => v * 0.45359237, fromBase: v => v / 0.45359237 },
+          ton_us: { label: "short ton (US)", toBase: v => v * 907.18474, fromBase: v => v / 907.18474 }
+        }
+      },
+      volume: {
+        metric: {
+          milliliter: { label: "milliliter (mL)", toBase: v => v / 1000, fromBase: v => v * 1000 },
+          liter: { label: "liter (L)", toBase: v => v, fromBase: v => v }
+        },
+        imperial: {
+          floz: { label: "fluid ounce (US)", toBase: v => v * 0.0295735295625, fromBase: v => v / 0.0295735295625 },
+          cup: { label: "cup (US)", toBase: v => v * 0.2365882365, fromBase: v => v / 0.2365882365 },
+          pint: { label: "pint (US)", toBase: v => v * 0.473176473, fromBase: v => v / 0.473176473 },
+          gallon: { label: "gallon (US)", toBase: v => v * 3.785411784, fromBase: v => v / 3.785411784 }
+        }
+      },
+      temperature: {
+        metric: {
+          celsius: { label: "celsius (°C)", toBase: v => v, fromBase: v => v },
+          kelvin: { label: "kelvin (K)", toBase: v => v - 273.15, fromBase: v => v + 273.15 }
+        },
+        imperial: {
+          fahrenheit: { label: "fahrenheit (°F)", toBase: v => (v - 32) * 5 / 9, fromBase: v => (v * 9 / 5) + 32 }
+        }
       }
+    };
+
+    const categoryLabels = {
+      length: "Length",
+      mass: "Mass",
+      volume: "Volume",
+      temperature: "Temperature"
+    };
+
+    const valueInput = document.getElementById("valueInput");
+    const categorySelect = document.getElementById("categorySelect");
+    const fromUnitSelect = document.getElementById("fromUnitSelect");
+    const toUnitSelect = document.getElementById("toUnitSelect");
+    const result = document.getElementById("result");
+    const convertBtn = document.getElementById("convertBtn");
+    const metricToImperialBtn = document.getElementById("metricToImperialBtn");
+    const imperialToMetricBtn = document.getElementById("imperialToMetricBtn");
+
+    let mode = "metric_to_imperial";
+
+    function sidesForMode() {
+      return mode === "metric_to_imperial"
+        ? { fromSide: "metric", toSide: "imperial" }
+        : { fromSide: "imperial", toSide: "metric" };
     }
 
-    function saveState(state) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      setSavedStatus("Saved");
+    function setMode(nextMode) {
+      mode = nextMode;
+      metricToImperialBtn.classList.toggle("active", mode === "metric_to_imperial");
+      imperialToMetricBtn.classList.toggle("active", mode === "imperial_to_metric");
+      populateCategories();
+      convert();
     }
 
-    // ======================
-    // Timer Engine
-    // ======================
-    let running = false;
-    let startT = 0;
-    let elapsedMs = 0;
-    let rafId = null;
-
-    function now() { return performance.now(); }
-
-    function formatMs(ms) {
-      const m = Math.floor(ms / 60000);
-      const s = Math.floor((ms % 60000) / 1000);
-      const mm = Math.floor(ms % 1000);
-      const mStr = String(m).padStart(2, "0");
-      const sStr = String(s).padStart(2, "0");
-      const mmStr = String(mm).padStart(3, "0");
-      return `${mStr}:${sStr}.${mmStr}`;
-    }
-
-    function tick() {
-      if (!running) return;
-      elapsedMs = now() - startT;
-      timeDisplay.textContent = formatMs(elapsedMs);
-      rafId = requestAnimationFrame(tick);
-    }
-
-    function startTimer() {
-      if (running) return;
-      running = true;
-      startT = now() - elapsedMs; // resume support
-      timerState.textContent = "Running";
-      startStopBtn.textContent = "Stop";
-      rafId = requestAnimationFrame(tick);
-    }
-
-    function stopTimer() {
-      if (!running) return;
-      running = false;
-      elapsedMs = now() - startT;
-      timeDisplay.textContent = formatMs(elapsedMs);
-      timerState.textContent = "Stopped";
-      startStopBtn.textContent = "Start";
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = null;
-      // Focus label for fast workflow
-      labelInput.focus();
-    }
-
-    function resetTimer() {
-      running = false;
-      elapsedMs = 0;
-      timeDisplay.textContent = "00:00.000";
-      timerState.textContent = "Ready";
-      startStopBtn.textContent = "Start";
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-
-    // ======================
-    // Runs + UI
-    // ======================
-    const timeDisplay = document.getElementById("timeDisplay");
-    const timerState = document.getElementById("timerState");
-    const startStopBtn = document.getElementById("startStopBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const labelInput = document.getElementById("labelInput");
-    const runsBody = document.getElementById("runsBody");
-    const runCount = document.getElementById("runCount");
-    const exportBtn = document.getElementById("exportBtn");
-    const clearAllBtn = document.getElementById("clearAllBtn");
-    const sessionNameInput = document.getElementById("sessionName");
-    const clearLabelBtn = document.getElementById("clearLabelBtn");
-    const savedStatus = document.getElementById("savedStatus");
-
-    let state = loadState();
-    sessionNameInput.value = state.sessionName || "";
-
-    function setSavedStatus(text) {
-      savedStatus.textContent = text;
-      savedStatus.style.opacity = "1";
-      clearTimeout(setSavedStatus._t);
-      setSavedStatus._t = setTimeout(() => { savedStatus.style.opacity = "0.7"; }, 800);
-    }
-
-    function isoToNice(iso) {
-      try {
-        const d = new Date(iso);
-        return d.toLocaleString();
-      } catch {
-        return iso;
+    function populateCategories() {
+      const previous = categorySelect.value;
+      categorySelect.innerHTML = "";
+      for (const [key, label] of Object.entries(categoryLabels)) {
+        categorySelect.add(new Option(label, key));
       }
+      categorySelect.value = previous || "length";
+      populateUnits();
     }
 
-    function renderRuns() {
-      runsBody.innerHTML = "";
-      const runs = state.runs || [];
-      runCount.textContent = `${runs.length} run${runs.length === 1 ? "" : "s"}`;
+    function populateUnits() {
+      const cat = categorySelect.value;
+      const { fromSide, toSide } = sidesForMode();
+      const fromUnits = unitDefs[cat][fromSide];
+      const toUnits = unitDefs[cat][toSide];
 
-      if (runs.length === 0) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 4;
-        td.style.color = "rgba(238,242,255,0.7)";
-        td.textContent = "No runs yet. Time a run and tap Save Run.";
-        td.style.padding = "14px";
-        tr.appendChild(td);
-        runsBody.appendChild(tr);
+      fromUnitSelect.innerHTML = "";
+      toUnitSelect.innerHTML = "";
+
+      for (const [key, info] of Object.entries(fromUnits)) fromUnitSelect.add(new Option(info.label, key));
+      for (const [key, info] of Object.entries(toUnits)) toUnitSelect.add(new Option(info.label, key));
+    }
+
+    function fmt(n) {
+      return Number.parseFloat(n.toPrecision(12)).toString();
+    }
+
+    function convert() {
+      const cat = categorySelect.value;
+      const { fromSide, toSide } = sidesForMode();
+      const value = Number(valueInput.value);
+
+      if (!Number.isFinite(value)) {
+        result.textContent = "Please enter a valid number.";
         return;
       }
 
-      for (const run of runs) {
-        const tr = document.createElement("tr");
+      const from = unitDefs[cat][fromSide][fromUnitSelect.value];
+      const to = unitDefs[cat][toSide][toUnitSelect.value];
 
-        const tdLabel = document.createElement("td");
-        tdLabel.textContent = run.label || "";
-        tr.appendChild(tdLabel);
-
-        const tdTime = document.createElement("td");
-        tdTime.className = "mono";
-        tdTime.textContent = run.time_display || formatMs(run.time_ms || 0);
-        tr.appendChild(tdTime);
-
-        const tdTs = document.createElement("td");
-        tdTs.textContent = isoToNice(run.created_at || "");
-        tr.appendChild(tdTs);
-
-        const tdAct = document.createElement("td");
-        const actWrap = document.createElement("div");
-        actWrap.className = "actions";
-
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit";
-        editBtn.addEventListener("click", () => {
-          const newLabel = prompt("Edit label:", run.label || "");
-          if (newLabel === null) return;
-          run.label = newLabel.trim();
-          saveState(state);
-          renderRuns();
-        });
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "btn-danger";
-        delBtn.textContent = "Delete";
-        delBtn.addEventListener("click", () => {
-          state.runs = state.runs.filter(r => r.id !== run.id);
-          saveState(state);
-          renderRuns();
-        });
-
-        actWrap.appendChild(editBtn);
-        actWrap.appendChild(delBtn);
-        tdAct.appendChild(actWrap);
-        tr.appendChild(tdAct);
-
-        runsBody.appendChild(tr);
-      }
+      const baseValue = from.toBase(value);
+      const converted = to.fromBase(baseValue);
+      result.textContent = `${fmt(value)} ${from.label} = ${fmt(converted)} ${to.label}`;
     }
 
-    function addRun() {
-      if (running) stopTimer();
-
-      const ms = Math.max(0, Math.floor(elapsedMs));
-      if (ms <= 0) {
-        alert("Timer is 0. Start and stop to record a run.");
-        return;
-      }
-
-      const sessionName = (sessionNameInput.value || "").trim();
-      const labelRaw = (labelInput.value || "").trim();
-      const label = labelRaw.length ? labelRaw : `Run ${((state.runs?.length || 0) + 1)}`;
-
-      const run = {
-        id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2)),
-        session: sessionName,
-        label,
-        time_ms: ms,
-        time_display: formatMs(ms),
-        created_at: new Date().toISOString()
-      };
-
-      state.sessionName = sessionName;
-      state.runs = state.runs || [];
-      state.runs.unshift(run);
-
-      saveState(state);
-      renderRuns();
-
-      // Clear label to speed next entry
-      labelInput.value = "";
-      setSavedStatus("Saved run");
-    }
-
-    // ======================
-    // CSV Export
-    // ======================
-    function csvEscape(value) {
-      const s = String(value ?? "");
-      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
-      return s;
-    }
-
-    function exportCSV() {
-      const sessionName = (sessionNameInput.value || state.sessionName || "").trim();
-      const runs = state.runs || [];
-
-      if (runs.length === 0) {
-        alert("No runs to export.");
-        return;
-      }
-
-      const headers = ["Session", "Label", "Time (ms)", "Time", "Timestamp"];
-      const rows = [headers.join(",")];
-
-      for (const r of runs.slice().reverse()) { // oldest -> newest in file
-        rows.push([
-          csvEscape(sessionName || r.session || ""),
-          csvEscape(r.label || ""),
-          csvEscape(r.time_ms ?? ""),
-          csvEscape(r.time_display || ""),
-          csvEscape(r.created_at || "")
-        ].join(","));
-      }
-
-      const csv = rows.join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-
-      const dateStr = new Date().toISOString().slice(0, 10);
-      const safeSession = (sessionName || "session").replace(/[^a-z0-9-_]+/gi, "_").slice(0, 40);
-      const filename = `hovercraft-times_${safeSession}_${dateStr}.csv`;
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    // ======================
-    // Events
-    // ======================
-    startStopBtn.addEventListener("click", () => running ? stopTimer() : startTimer());
-    resetBtn.addEventListener("click", resetTimer);
-    saveBtn.addEventListener("click", addRun);
-    exportBtn.addEventListener("click", exportCSV);
-
-    clearAllBtn.addEventListener("click", () => {
-      if (!confirm("Clear ALL saved runs? This cannot be undone.")) return;
-      state.runs = [];
-      saveState(state);
-      renderRuns();
-      setSavedStatus("Cleared");
+    categorySelect.addEventListener("change", () => {
+      populateUnits();
+      convert();
     });
+    fromUnitSelect.addEventListener("change", convert);
+    toUnitSelect.addEventListener("change", convert);
+    valueInput.addEventListener("input", convert);
+    convertBtn.addEventListener("click", convert);
+    metricToImperialBtn.addEventListener("click", () => setMode("metric_to_imperial"));
+    imperialToMetricBtn.addEventListener("click", () => setMode("imperial_to_metric"));
 
-    clearLabelBtn.addEventListener("click", () => {
-      labelInput.value = "";
-      labelInput.focus();
-    });
-
-    sessionNameInput.addEventListener("input", () => {
-      state.sessionName = (sessionNameInput.value || "").trim();
-      saveState(state);
-      setSavedStatus("Saved");
-    });
-
-    // Keyboard shortcuts (if a keyboard is connected)
-    document.addEventListener("keydown", (e) => {
-      // Don't hijack keys while typing in inputs
-      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-      const typing = tag === "input" || tag === "textarea";
-
-      if (!typing && e.code === "Space") {
-        e.preventDefault();
-        running ? stopTimer() : startTimer();
-      }
-      if (!typing && (e.key === "r" || e.key === "R")) {
-        resetTimer();
-      }
-      if (typing && e.key === "Enter" && e.target === labelInput) {
-        addRun();
-      }
-    });
-
-    // Init
-    setSavedStatus("Loaded");
-    renderRuns();
+    setMode("metric_to_imperial");
   </script>
 </body>
 </html>
