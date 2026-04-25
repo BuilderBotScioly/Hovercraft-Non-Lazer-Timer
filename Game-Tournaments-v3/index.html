@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Game Tournaments v3</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="card header">
+        <div>
+          <h1>Game Tournaments v3</h1>
+          <p class="muted">iPad-friendly tournament manager + live slideshow display.</p>
+        </div>
+        <div class="header-actions">
+          <button id="openDisplayBtn" class="primary">Open Display</button>
+          <button id="copyDisplayLinkBtn">Copy Display Link</button>
+          <button id="resetAllBtn" class="danger">Reset Tournament</button>
+        </div>
+      </header>
+
+      <section id="presenterView" class="layout">
+        <aside class="stack">
+          <section class="card">
+            <label for="tournamentName">Tournament Name</label>
+            <input id="tournamentName" type="text" placeholder="Weekend Arcade Cup" />
+          </section>
+
+          <section class="card">
+            <div class="section-title">
+              <h2>Players</h2>
+            </div>
+            <div class="row">
+              <input id="playerNameInput" type="text" placeholder="Add player" />
+              <button id="addPlayerBtn" class="primary">Add</button>
+            </div>
+            <ul id="playersList" class="tag-list"></ul>
+          </section>
+
+          <section class="card">
+            <div class="section-title">
+              <h2>Games</h2>
+            </div>
+            <div class="stack-sm">
+              <input id="gameNameInput" type="text" placeholder="Game name" />
+              <textarea id="gameRulesInput" rows="4" placeholder="Rules shown on slideshow screen"></textarea>
+              <button id="addGameBtn" class="primary">Add Game</button>
+            </div>
+            <ul id="gamesList" class="game-list"></ul>
+          </section>
+        </aside>
+
+        <section class="stack wide">
+          <section class="card">
+            <div class="section-title">
+              <h2>Live Score Editing</h2>
+              <span class="muted">Changes update the display instantly.</span>
+            </div>
+            <div id="scoreEditor"></div>
+          </section>
+
+          <section class="card">
+            <div class="section-title">
+              <h2>Slideshow Controls</h2>
+              <span id="slideIndicator" class="muted"></span>
+            </div>
+            <div class="row">
+              <button id="prevSlideBtn">◀ Previous</button>
+              <button id="nextSlideBtn" class="primary">Next ▶</button>
+            </div>
+            <div id="slidePreview" class="preview"></div>
+          </section>
+        </section>
+      </section>
+
+      <section id="displayView" class="display hidden" aria-live="polite">
+        <div class="display-header">
+          <h1 id="displayTitle"></h1>
+          <p id="displaySubtitle"></p>
+        </div>
+        <div id="displayBody" class="display-body"></div>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
